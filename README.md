@@ -1,10 +1,10 @@
-# ptdxdt - PyTorch Differentiable Numerical Differentiation
+# torch-dxdt - Numerical Derivatives of Timeseries Data in PyTorch
 
-[![PyPI version](https://badge.fury.io/py/ptdxdt.svg)](https://badge.fury.io/py/ptdxdt)
+[![PyPI version](https://badge.fury.io/py/torch_dxdt.svg)](https://badge.fury.io/py/torch-dxdt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 
-**ptdxdt** is a PyTorch implementation of numerical differentiation methods for noisy time series data. It provides differentiable versions of common differentiation algorithms, allowing them to be used as part of neural network training pipelines, physics-informed neural networks (PINNs), and other gradient-based optimization tasks.
+**torch-dxdt** is a PyTorch implementation of numerical differentiation methods for (noisy) time series data. It provides differentiable versions of common differentiation algorithms, allowing them to be used as part of neural network training pipelines, physics-informed neural networks (PINNs), and other gradient-based optimization tasks.
 
 This package is inspired by and aims to be compatible with the [derivative](https://github.com/andgoldschmidt/derivative) package by Andy Goldschmidt.
 
@@ -20,7 +20,7 @@ This package is inspired by and aims to be compatible with the [derivative](http
 ## Installation
 
 ```bash
-pip install ptdxdt
+pip install torch-dxdt
 ```
 
 Or install from source:
@@ -35,17 +35,17 @@ pip install -e .
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 # Create sample data
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t) + 0.1 * torch.randn(100)
 
 # Compute derivative using functional interface
-dx = ptdxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
+dx = torch_dxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
 
 # Or use object-oriented interface
-sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=3)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3)
 dx = sg.d(x, t)
 ```
 
@@ -67,13 +67,13 @@ dx = sg.d(x, t)
 ```python
 # Symmetric finite differences using Taylor series coefficients
 # k=1 gives 3-point central difference, k=2 gives 5-point, etc.
-dx = ptdxdt.dxdt(x, t, kind="finite_difference", k=1)
+dx = torch_dxdt.dxdt(x, t, kind="finite_difference", k=1)
 ```
 
 ### Savitzky-Golay Filter
 ```python
 # Polynomial smoothing filter - great for noisy data
-dx = ptdxdt.dxdt(x, t, kind="savitzky_golay", 
+dx = torch_dxdt.dxdt(x, t, kind="savitzky_golay", 
                  window_length=11,  # Must be odd
                  polyorder=3)       # Polynomial order
 ```
@@ -81,23 +81,23 @@ dx = ptdxdt.dxdt(x, t, kind="savitzky_golay",
 ### Spectral Differentiation
 ```python
 # FFT-based differentiation - very accurate for periodic signals
-dx = ptdxdt.dxdt(x, t, kind="spectral")
+dx = torch_dxdt.dxdt(x, t, kind="spectral")
 
 # With frequency filtering
-dx = ptdxdt.dxdt(x, t, kind="spectral", 
+dx = torch_dxdt.dxdt(x, t, kind="spectral", 
                  filter_func=lambda k: (k < 10).float())
 ```
 
 ### Spline Smoothing
 ```python
 # Whittaker/spline smoothing with regularization
-dx = ptdxdt.dxdt(x, t, kind="spline", s=0.01)  # s controls smoothing
+dx = torch_dxdt.dxdt(x, t, kind="spline", s=0.01)  # s controls smoothing
 ```
 
 ### Kernel (Gaussian Process)
 ```python
 # GP-based differentiation with RBF kernel
-dx = ptdxdt.dxdt(x, t, kind="kernel", 
+dx = torch_dxdt.dxdt(x, t, kind="kernel", 
                  sigma=1.0,   # Kernel length scale
                  lmbd=0.1)    # Noise variance
 ```
@@ -105,17 +105,17 @@ dx = ptdxdt.dxdt(x, t, kind="kernel",
 ### Kalman Smoother
 ```python
 # Kalman smoother assuming Brownian motion derivative
-dx = ptdxdt.dxdt(x, t, kind="kalman", alpha=1.0)
+dx = torch_dxdt.dxdt(x, t, kind="kalman", alpha=1.0)
 ```
 
 ### Whittaker-Eilers Smoother
 ```python
 # Global smoother using penalized least squares with Cholesky decomposition
 # lmbda controls smoothness (larger = smoother)
-dx = ptdxdt.dxdt(x, t, kind="whittaker", lmbda=100.0)
+dx = torch_dxdt.dxdt(x, t, kind="whittaker", lmbda=100.0)
 
 # With different difference penalty order
-dx = ptdxdt.dxdt(x, t, kind="whittaker", lmbda=1000.0, d_order=2)
+dx = torch_dxdt.dxdt(x, t, kind="whittaker", lmbda=1000.0, d_order=2)
 ```
 
 ## Higher-Order Derivatives
@@ -124,15 +124,15 @@ Several methods support computing higher-order derivatives:
 
 ```python
 # Second-order derivative with Savitzky-Golay (order is a constructor parameter)
-sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=4, order=2)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4, order=2)
 d2x = sg.d(x, t)  # Second derivative
 
 # Or via functional interface (order passed as kwarg to constructor)
-d2x = ptdxdt.dxdt(x, t, kind="savitzky_golay", 
+d2x = torch_dxdt.dxdt(x, t, kind="savitzky_golay", 
                   window_length=11, polyorder=4, order=2)
 
 # Whittaker also supports second-order derivatives via d_orders()
-wh = ptdxdt.Whittaker(lmbda=100.0)
+wh = torch_dxdt.Whittaker(lmbda=100.0)
 derivs = wh.d_orders(x, t, orders=[1, 2])
 dx, d2x = derivs[1], derivs[2]
 ```
@@ -143,7 +143,7 @@ For efficiency, you can compute multiple derivative orders simultaneously:
 
 ```python
 # Compute smoothed signal, first and second derivatives in one call
-sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=4)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4)
 derivs = sg.d_orders(x, t, orders=[0, 1, 2])
 
 x_smooth = derivs[0]  # Smoothed signal (order 0)
@@ -151,7 +151,7 @@ dx = derivs[1]        # First derivative
 d2x = derivs[2]       # Second derivative
 
 # Also available via functional interface
-derivs = ptdxdt.dxdt_orders(x, t, kind="savitzky_golay",
+derivs = torch_dxdt.dxdt_orders(x, t, kind="savitzky_golay",
                             window_length=11, polyorder=4,
                             orders=[0, 1, 2])
 ```
@@ -160,12 +160,12 @@ This is more efficient than calling `d()` multiple times as it avoids redundant 
 
 ## Using with Neural Networks
 
-The key feature of **ptdxdt** is that all operations are differentiable, so you can use them in training loops:
+The key feature of **torch-dxdt** is that all operations are differentiable, so you can use them in training loops:
 
 ```python
 import torch
 import torch.nn as nn
-import ptdxdt
+import torch_dxdt
 
 class PhysicsInformedModel(nn.Module):
     def __init__(self):
@@ -175,7 +175,7 @@ class PhysicsInformedModel(nn.Module):
             nn.Tanh(),
             nn.Linear(64, 1)
         )
-        self.diff = ptdxdt.SavitzkyGolay(window_length=5, polyorder=2)
+        self.diff = torch_dxdt.SavitzkyGolay(window_length=5, polyorder=2)
     
     def forward(self, t):
         x = self.net(t.unsqueeze(-1)).squeeze(-1)
@@ -203,10 +203,10 @@ Some methods also support smoothing without differentiation:
 
 ```python
 # Get smoothed signal
-x_smooth = ptdxdt.smooth_x(x, t, kind="spline", s=0.1)
-x_smooth = ptdxdt.smooth_x(x, t, kind="kernel", sigma=1.0, lmbd=0.1)
-x_smooth = ptdxdt.smooth_x(x, t, kind="kalman", alpha=1.0)
-x_smooth = ptdxdt.smooth_x(x, t, kind="whittaker", lmbda=100.0)
+x_smooth = torch_dxdt.smooth_x(x, t, kind="spline", s=0.1)
+x_smooth = torch_dxdt.smooth_x(x, t, kind="kernel", sigma=1.0, lmbd=0.1)
+x_smooth = torch_dxdt.smooth_x(x, t, kind="kalman", alpha=1.0)
+x_smooth = torch_dxdt.smooth_x(x, t, kind="whittaker", lmbda=100.0)
 ```
 
 ## Batched Processing
@@ -216,23 +216,23 @@ All methods support batched inputs:
 ```python
 # Process multiple signals at once
 x_batch = torch.stack([torch.sin(t), torch.cos(t)], dim=0)  # Shape: (2, 100)
-dx_batch = ptdxdt.dxdt(x_batch, t, kind="savitzky_golay", 
+dx_batch = torch_dxdt.dxdt(x_batch, t, kind="savitzky_golay", 
                         window_length=11, polyorder=3)
 # dx_batch has shape (2, 100)
 ```
 
 ## Comparison with `derivative` Package
 
-**ptdxdt** is designed to be API-compatible with the [derivative](https://github.com/andgoldschmidt/derivative) package where possible, but with PyTorch tensors instead of NumPy arrays:
+**torch-dxdt** is designed to be API-compatible with the [derivative](https://github.com/andgoldschmidt/derivative) package where possible, but with PyTorch tensors instead of NumPy arrays:
 
 ```python
 # derivative (NumPy)
 from derivative import dxdt as np_dxdt
 dx_np = np_dxdt(x_np, t_np, kind="finite_difference", k=1)
 
-# ptdxdt (PyTorch)
-import ptdxdt
-dx_torch = ptdxdt.dxdt(x_torch, t_torch, kind="finite_difference", k=1)
+# torch-dxdt (PyTorch)
+import torch_dxdt
+dx_torch = torch_dxdt.dxdt(x_torch, t_torch, kind="finite_difference", k=1)
 ```
 
 ## API Reference
@@ -240,18 +240,18 @@ dx_torch = ptdxdt.dxdt(x_torch, t_torch, kind="finite_difference", k=1)
 ### Functional Interface
 
 ```python
-ptdxdt.dxdt(x, t, kind=None, axis=-1, **kwargs)
+torch_dxdt.dxdt(x, t, kind=None, axis=-1, **kwargs)
 ```
 Compute the derivative of `x` with respect to `t`.
 
 ```python
-ptdxdt.smooth_x(x, t, kind=None, axis=-1, **kwargs)
+torch_dxdt.smooth_x(x, t, kind=None, axis=-1, **kwargs)
 ```
 Compute the smoothed version of `x` (only for methods that support it).
 
 ### Classes
 
-All derivative classes inherit from `ptdxdt.Derivative` and implement:
+All derivative classes inherit from `torch_dxdt.Derivative` and implement:
 - `d(x, t, axis=-1)`: Compute derivative
 - `d_orders(x, t, orders=[0, 1, 2], axis=-1)`: Compute multiple derivative orders efficiently
 - `smooth(x, t, axis=-1)`: Compute smoothed signal (if supported)
@@ -259,7 +259,7 @@ All derivative classes inherit from `ptdxdt.Derivative` and implement:
 For higher-order derivatives, pass `order=N` to the constructor (e.g., `SavitzkyGolay(order=2)`) or use `d_orders()`.
 
 ```python
-ptdxdt.dxdt_orders(x, t, kind=None, orders=(1, 2), axis=-1, **kwargs)
+torch_dxdt.dxdt_orders(x, t, kind=None, orders=(1, 2), axis=-1, **kwargs)
 ```
 Compute multiple derivative orders simultaneously.
 
@@ -291,8 +291,8 @@ git clone https://github.com/mstoelzle/torch-dxdt.git
 cd torch-dxdt
 
 # Create conda environment
-conda create -n ptdxdt python=3.13 -y
-conda activate ptdxdt
+conda create -n torch-dxdt python=3.13 -y
+conda activate torch-dxdt
 
 # Install in development mode with all dependencies
 pip install -e ".[dev]"
@@ -310,9 +310,9 @@ pytest tests/test_correctness.py -v
 If you use this package in your research, please consider citing:
 
 ```bibtex
-@software{ptdxdt,
+@software{torch-dxdt,
   author = {Stölzle, Maximilian},
-  title = {ptdxdt: Differentiable Numerical Differentiation in PyTorch},
+  title = {torch-dxdt: Differentiable Numerical Differentiation in PyTorch},
   url = {https://github.com/mstoelzle/torch-dxdt},
   year = {2025}
 }

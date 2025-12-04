@@ -1,5 +1,5 @@
 """
-Tests for automatic differentiation (backward pass) through ptdxdt methods.
+Tests for automatic differentiation (backward pass) through torch_dxdt methods.
 
 These tests verify that all methods are truly differentiable and can be used
 in PyTorch optimization loops.
@@ -8,7 +8,7 @@ in PyTorch optimization loops.
 import pytest
 import torch
 
-import ptdxdt
+import torch_dxdt
 
 
 class TestBackpropagation:
@@ -31,7 +31,7 @@ class TestBackpropagation:
         t = torch.linspace(0, 2 * torch.pi, 50, dtype=torch.float64)
         x = torch.sin(t).clone().requires_grad_(True)
 
-        dx = ptdxdt.dxdt(x, t, kind=method_name, **kwargs)
+        dx = torch_dxdt.dxdt(x, t, kind=method_name, **kwargs)
 
         # Compute a scalar loss
         loss = dx.sum()
@@ -58,7 +58,7 @@ class TestBackpropagation:
         t = torch.linspace(0, 2 * torch.pi, 50, dtype=torch.float64)
         x = torch.sin(t).clone().requires_grad_(True)
 
-        dx = ptdxdt.dxdt(x, t, kind=method_name, **kwargs)
+        dx = torch_dxdt.dxdt(x, t, kind=method_name, **kwargs)
         loss = dx.pow(2).sum()  # Squared loss
         loss.backward()
 
@@ -85,7 +85,7 @@ class TestBackpropagation:
             dim=0,
         ).requires_grad_(True)  # Shape: (2, 50)
 
-        dx = ptdxdt.dxdt(x_batch, t, kind=method_name, **kwargs)
+        dx = torch_dxdt.dxdt(x_batch, t, kind=method_name, **kwargs)
         loss = dx.sum()
         loss.backward()
 
@@ -106,7 +106,7 @@ class TestOptimization:
         x = torch.nn.Parameter(torch.sin(t) + 0.5 * torch.randn_like(t))
 
         optimizer = torch.optim.Adam([x], lr=0.1)
-        fd = ptdxdt.FiniteDifference(k=1)
+        fd = torch_dxdt.FiniteDifference(k=1)
 
         initial_loss = None
         for _step in range(20):
@@ -129,7 +129,7 @@ class TestOptimization:
         x = torch.nn.Parameter(torch.sin(t) + 0.3 * torch.randn_like(t))
 
         optimizer = torch.optim.Adam([x], lr=0.1)
-        sg = ptdxdt.SavitzkyGolay(window_length=5, polyorder=2)
+        sg = torch_dxdt.SavitzkyGolay(window_length=5, polyorder=2)
 
         initial_loss = None
         for _step in range(20):
@@ -153,7 +153,7 @@ class TestOptimization:
         x = torch.nn.Parameter(torch.sin(t) + 0.3 * torch.randn_like(t))
 
         optimizer = torch.optim.Adam([x], lr=0.1)
-        spec = ptdxdt.Spectral()
+        spec = torch_dxdt.Spectral()
 
         initial_loss = None
         for _step in range(20):
@@ -176,7 +176,7 @@ class TestOptimization:
         x = torch.nn.Parameter(torch.sin(t) + 0.3 * torch.randn_like(t))
 
         optimizer = torch.optim.Adam([x], lr=0.1)
-        spl = ptdxdt.Spline(s=0.1)
+        spl = torch_dxdt.Spline(s=0.1)
 
         initial_loss = None
         for _step in range(20):
@@ -209,7 +209,7 @@ class TestGradientChecking:
         x = torch.sin(t).requires_grad_(True)
 
         def func(x_input):
-            return ptdxdt.dxdt(x_input, t, kind=method_name, **kwargs)
+            return torch_dxdt.dxdt(x_input, t, kind=method_name, **kwargs)
 
         # gradcheck compares analytical gradients to numerical approximation
         try:
@@ -240,7 +240,7 @@ class TestSmoothingGradients:
         t = torch.linspace(0, 2 * torch.pi, 30, dtype=torch.float64)
         x = (torch.sin(t) + 0.2 * torch.randn_like(t)).requires_grad_(True)
 
-        x_smooth = ptdxdt.smooth_x(x, t, kind=method_name, **kwargs)
+        x_smooth = torch_dxdt.smooth_x(x, t, kind=method_name, **kwargs)
         loss = x_smooth.sum()
         loss.backward()
 
@@ -256,7 +256,7 @@ class TestChainedOperations:
         t = torch.linspace(0, 2 * torch.pi, 50, dtype=torch.float64)
         x = torch.sin(t).requires_grad_(True)
 
-        fd = ptdxdt.FiniteDifference(k=1)
+        fd = torch_dxdt.FiniteDifference(k=1)
 
         # First derivative
         dx = fd.d(x, t)
@@ -275,9 +275,9 @@ class TestChainedOperations:
         x = (torch.sin(t) + 0.2 * torch.randn_like(t)).requires_grad_(True)
 
         # First smooth
-        x_smooth = ptdxdt.smooth_x(x, t, kind="spline", s=0.1)
+        x_smooth = torch_dxdt.smooth_x(x, t, kind="spline", s=0.1)
         # Then differentiate
-        dx = ptdxdt.dxdt(x_smooth, t, kind="finite_difference", k=1)
+        dx = torch_dxdt.dxdt(x_smooth, t, kind="finite_difference", k=1)
 
         loss = dx.sum()
         loss.backward()
@@ -295,7 +295,7 @@ class TestNeuralNetworkIntegration:
         class PhysicsInformedLayer(torch.nn.Module):
             def __init__(self):
                 super().__init__()
-                self.fd = ptdxdt.FiniteDifference(k=1)
+                self.fd = torch_dxdt.FiniteDifference(k=1)
                 self.linear = torch.nn.Linear(50, 50)
 
             def forward(self, x, t):
@@ -333,7 +333,7 @@ class TestNeuralNetworkIntegration:
         x = torch.sin(t).requires_grad_(True)
         x_scaled = CustomOp.apply(x)
 
-        dx = ptdxdt.dxdt(x_scaled, t, kind="finite_difference", k=1)
+        dx = torch_dxdt.dxdt(x_scaled, t, kind="finite_difference", k=1)
         loss = dx.sum()
         loss.backward()
 
@@ -376,7 +376,7 @@ class TestAutodiffVsNumerical:
 
         # Compute numerical derivative
         x_detached = x.detach()
-        dx_numerical = ptdxdt.dxdt(x_detached, t, kind=method_name, **kwargs)
+        dx_numerical = torch_dxdt.dxdt(x_detached, t, kind=method_name, **kwargs)
 
         # Compare (exclude edges for methods that have edge effects)
         margin = 5
@@ -415,7 +415,7 @@ class TestAutodiffVsNumerical:
 
         # Compute numerical derivative
         x_detached = x.detach()
-        dx_numerical = ptdxdt.dxdt(x_detached, t, kind=method_name, **kwargs)
+        dx_numerical = torch_dxdt.dxdt(x_detached, t, kind=method_name, **kwargs)
 
         # Compare
         margin = 5
@@ -452,7 +452,7 @@ class TestAutodiffVsNumerical:
 
         # Compute numerical derivative
         x_detached = x.detach()
-        dx_numerical = ptdxdt.dxdt(x_detached, t, kind=method_name, **kwargs)
+        dx_numerical = torch_dxdt.dxdt(x_detached, t, kind=method_name, **kwargs)
 
         # Compare
         margin = 5
@@ -480,7 +480,7 @@ class TestAutodiffVsNumerical:
 
         # Compute second derivative numerically using Savitzky-Golay
         x_detached = x.detach()
-        sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=4, order=2)
+        sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4, order=2)
         d2x_numerical = sg.d(x_detached, t)
 
         # Compare (exclude edges)
@@ -514,7 +514,7 @@ class TestAutodiffVsNumerical:
 
         # Compute numerical derivatives for batch
         x_detached = x_batch.detach()
-        dx_numerical = ptdxdt.dxdt(x_detached, t, kind="spectral", axis=-1)
+        dx_numerical = torch_dxdt.dxdt(x_detached, t, kind="spectral", axis=-1)
 
         # Compare
         margin = 3

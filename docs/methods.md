@@ -17,16 +17,16 @@ Higher-order approximations use more points. The window size parameter `k` contr
 ### Usage
 
 ```python
-import ptdxdt
+import torch_dxdt
 
 # 3-point central difference (k=1)
-fd = ptdxdt.FiniteDifference(k=1)
+fd = torch_dxdt.FiniteDifference(k=1)
 
 # 5-point difference (k=2)
-fd = ptdxdt.FiniteDifference(k=2)
+fd = torch_dxdt.FiniteDifference(k=2)
 
 # Periodic boundary conditions
-fd = ptdxdt.FiniteDifference(k=1, periodic=True)
+fd = torch_dxdt.FiniteDifference(k=1, periodic=True)
 ```
 
 ### Parameters
@@ -53,16 +53,16 @@ The Savitzky-Golay filter fits a polynomial of order $m$ to a window of $2k+1$ p
 ### Usage
 
 ```python
-import ptdxdt
+import torch_dxdt
 
 # Window of 11 points, cubic polynomial
-sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=3)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3)
 
 # First derivative (default)
 dx = sg.d(x, t)
 
 # Higher derivatives
-sg2 = ptdxdt.SavitzkyGolay(window_length=11, polyorder=4, deriv=2)
+sg2 = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4, deriv=2)
 d2x = sg2.d(x, t)
 ```
 
@@ -99,17 +99,17 @@ This method:
 ### Usage
 
 ```python
-import ptdxdt
+import torch_dxdt
 import torch
 
 # Basic usage
-spec = ptdxdt.Spectral()
+spec = torch_dxdt.Spectral()
 
 # Higher-order derivatives
-spec2 = ptdxdt.Spectral(order=2)
+spec2 = torch_dxdt.Spectral(order=2)
 
 # With frequency filtering
-spec_filtered = ptdxdt.Spectral(
+spec_filtered = torch_dxdt.Spectral(
     filter_func=lambda k: (k < 10).float()
 )
 ```
@@ -146,13 +146,13 @@ where $D$ is a difference operator and $\lambda$ controls smoothing. The derivat
 ### Usage
 
 ```python
-import ptdxdt
+import torch_dxdt
 
 # Light smoothing
-spl = ptdxdt.Spline(s=0.01)
+spl = torch_dxdt.Spline(s=0.01)
 
 # Heavy smoothing
-spl = ptdxdt.Spline(s=10.0)
+spl = torch_dxdt.Spline(s=10.0)
 
 # Get smoothed signal without derivative
 x_smooth = spl.smooth(x, t)
@@ -188,10 +188,10 @@ $$\hat{f}'(t^*) = k'(t^*, t)(K + \lambda I)^{-1}y$$
 ### Usage
 
 ```python
-import ptdxdt
+import torch_dxdt
 
 # Gaussian (RBF) kernel
-ker = ptdxdt.Kernel(sigma=1.0, lmbd=0.1)
+ker = torch_dxdt.Kernel(sigma=1.0, lmbd=0.1)
 
 # Compute derivative
 dx = ker.d(x, t)
@@ -233,13 +233,13 @@ It finds the maximum likelihood estimate for both the signal and its derivative 
 ### Usage
 
 ```python
-import ptdxdt
+import torch_dxdt
 
 # Default smoothing
-kal = ptdxdt.Kalman(alpha=1.0)
+kal = torch_dxdt.Kalman(alpha=1.0)
 
 # More smoothing
-kal = ptdxdt.Kalman(alpha=10.0)
+kal = torch_dxdt.Kalman(alpha=10.0)
 
 # Compute derivative
 dx = kal.d(x, t)
@@ -275,16 +275,16 @@ where $D^d$ is the $d$-th order difference matrix and $\lambda$ controls smoothi
 ### Usage
 
 ```python
-import ptdxdt
+import torch_dxdt
 
 # Basic usage
-wh = ptdxdt.Whittaker(lmbda=100.0)
+wh = torch_dxdt.Whittaker(lmbda=100.0)
 
 # More smoothing
-wh = ptdxdt.Whittaker(lmbda=1000.0)
+wh = torch_dxdt.Whittaker(lmbda=1000.0)
 
 # Different difference order
-wh = ptdxdt.Whittaker(lmbda=100.0, d_order=3)
+wh = torch_dxdt.Whittaker(lmbda=100.0, d_order=3)
 
 # Get smoothed signal
 x_smooth = wh.smooth(x, t)

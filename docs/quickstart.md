@@ -1,23 +1,23 @@
 # Quick Start
 
-This guide will help you get started with **ptdxdt** quickly.
+This guide will help you get started with **torch-dxdt** quickly.
 
 ## Basic Usage
 
 ### Functional Interface
 
-The simplest way to use ptdxdt is through the `dxdt` function:
+The simplest way to use torch-dxdt is through the `dxdt` function:
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 # Create sample data
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t) + 0.1 * torch.randn(100)
 
 # Compute derivative using Savitzky-Golay filter
-dx = ptdxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
+dx = torch_dxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
 ```
 
 ### Object-Oriented Interface
@@ -26,13 +26,13 @@ For more control, you can use the derivative classes directly:
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t)
 
 # Create a Savitzky-Golay filter
-sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=3)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3)
 
 # Compute derivative
 dx = sg.d(x, t)
@@ -43,7 +43,7 @@ dx = sg.d(x, t)
 To see all available differentiation methods:
 
 ```python
-print(ptdxdt.available_methods())
+print(torch_dxdt.available_methods())
 # ['finite_difference', 'savitzky_golay', 'spectral', 'spline', 'kernel', 'kalman', 'whittaker']
 ```
 
@@ -53,13 +53,13 @@ All methods are fully differentiable:
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t).requires_grad_(True)
 
 # Compute derivative
-dx = ptdxdt.dxdt(x, t, kind="finite_difference", k=1)
+dx = torch_dxdt.dxdt(x, t, kind="finite_difference", k=1)
 
 # Backpropagate through the operation
 loss = dx.sum()
@@ -75,7 +75,7 @@ All methods support batched inputs along the first dimension:
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 
@@ -87,7 +87,7 @@ x_batch = torch.stack([
 ], dim=0)  # Shape: (3, 100)
 
 # Compute derivatives for all signals at once
-dx_batch = ptdxdt.dxdt(x_batch, t, kind="finite_difference", k=1)
+dx_batch = torch_dxdt.dxdt(x_batch, t, kind="finite_difference", k=1)
 # dx_batch has shape (3, 100)
 ```
 
@@ -97,13 +97,13 @@ Some methods also support smoothing without differentiation:
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t) + 0.2 * torch.randn(100)  # Noisy signal
 
 # Get smoothed signal
-x_smooth = ptdxdt.smooth_x(x, t, kind="spline", s=0.1)
+x_smooth = torch_dxdt.smooth_x(x, t, kind="spline", s=0.1)
 ```
 
 ## Next Steps

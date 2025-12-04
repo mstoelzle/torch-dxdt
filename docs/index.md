@@ -1,6 +1,6 @@
-# ptdxdt Documentation
+# torch-dxdt Documentation
 
-**ptdxdt** - PyTorch Differentiable Numerical Differentiation
+**torch-dxdt** - PyTorch Differentiable Numerical Differentiation
 
 A PyTorch implementation of numerical differentiation methods for noisy time series data.
 
@@ -28,13 +28,13 @@ examples
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t) + 0.1 * torch.randn(100)
 
 # Compute derivative
-dx = ptdxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
+dx = torch_dxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
 ```
 
 ## Indices and tables

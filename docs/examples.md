@@ -19,7 +19,7 @@ The notebook includes:
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 import matplotlib.pyplot as plt
 
 # Create smooth data
@@ -30,9 +30,9 @@ x = torch.sin(t)
 dx_true = torch.cos(t)
 
 # Compute with different methods
-dx_fd = ptdxdt.dxdt(x, t, kind="finite_difference", k=1)
-dx_sg = ptdxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
-dx_spec = ptdxdt.dxdt(x, t, kind="spectral")
+dx_fd = torch_dxdt.dxdt(x, t, kind="finite_difference", k=1)
+dx_sg = torch_dxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
+dx_spec = torch_dxdt.dxdt(x, t, kind="spectral")
 
 # Compare results
 plt.figure(figsize=(10, 6))
@@ -51,7 +51,7 @@ plt.show()
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 # Create noisy data
 t = torch.linspace(0, 2 * torch.pi, 100)
@@ -60,12 +60,12 @@ noise = 0.1 * torch.randn(100)
 x_noisy = x_clean + noise
 
 # Use smoothing methods for noisy data
-dx_sg = ptdxdt.dxdt(x_noisy, t, kind="savitzky_golay", 
+dx_sg = torch_dxdt.dxdt(x_noisy, t, kind="savitzky_golay", 
                     window_length=15, polyorder=3)
-dx_spline = ptdxdt.dxdt(x_noisy, t, kind="spline", s=0.1)
-dx_kernel = ptdxdt.dxdt(x_noisy, t, kind="kernel", sigma=0.5, lmbd=0.1)
-dx_kalman = ptdxdt.dxdt(x_noisy, t, kind="kalman", alpha=0.1)
-dx_whittaker = ptdxdt.dxdt(x_noisy, t, kind="whittaker", lmbda=100.0)
+dx_spline = torch_dxdt.dxdt(x_noisy, t, kind="spline", s=0.1)
+dx_kernel = torch_dxdt.dxdt(x_noisy, t, kind="kernel", sigma=0.5, lmbd=0.1)
+dx_kalman = torch_dxdt.dxdt(x_noisy, t, kind="kalman", alpha=0.1)
+dx_whittaker = torch_dxdt.dxdt(x_noisy, t, kind="whittaker", lmbda=100.0)
 ```
 
 ## Autodiff Integration
@@ -75,7 +75,7 @@ dx_whittaker = ptdxdt.dxdt(x_noisy, t, kind="whittaker", lmbda=100.0)
 ```python
 import torch
 import torch.nn as nn
-import ptdxdt
+import torch_dxdt
 
 # Simple neural network
 class Net(nn.Module):
@@ -109,7 +109,7 @@ for epoch in range(1000):
     x_pred.requires_grad_(True)
     
     # Compute derivative of prediction
-    dx_pred = ptdxdt.dxdt(x_pred, t.squeeze(), kind="finite_difference")
+    dx_pred = torch_dxdt.dxdt(x_pred, t.squeeze(), kind="finite_difference")
     
     # Loss includes both value and derivative matching
     loss_x = ((x_pred - x_true) ** 2).mean()
@@ -127,21 +127,21 @@ for epoch in range(1000):
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t)
 
 # First derivative (should be cos(t))
-dx = ptdxdt.dxdt(x, t, kind="savitzky_golay", 
+dx = torch_dxdt.dxdt(x, t, kind="savitzky_golay", 
                  window_length=11, polyorder=5, order=1)
 
 # Second derivative (should be -sin(t))
-d2x = ptdxdt.dxdt(x, t, kind="savitzky_golay", 
+d2x = torch_dxdt.dxdt(x, t, kind="savitzky_golay", 
                   window_length=11, polyorder=5, order=2)
 
 # Or compute spectral derivatives of any order
-d2x_spectral = ptdxdt.dxdt(x, t, kind="spectral", order=2)
+d2x_spectral = torch_dxdt.dxdt(x, t, kind="spectral", order=2)
 ```
 
 ### Computing Multiple Derivative Orders Efficiently
@@ -150,14 +150,14 @@ Use `d_orders()` or `dxdt_orders()` to compute multiple derivatives in one pass:
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t) + 0.1 * torch.randn(100)
 
 # Compute smoothed signal, first and second derivatives simultaneously
 # This is more efficient than calling dxdt() multiple times
-derivs = ptdxdt.dxdt_orders(x, t, kind="savitzky_golay",
+derivs = torch_dxdt.dxdt_orders(x, t, kind="savitzky_golay",
                             window_length=11, polyorder=4,
                             orders=[0, 1, 2])
 
@@ -166,11 +166,11 @@ dx = derivs[1]        # First derivative
 d2x = derivs[2]       # Second derivative
 
 # Or using the class interface
-sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=4)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4)
 derivs = sg.d_orders(x, t, orders=[0, 1, 2])
 
 # Whittaker also supports efficient multi-order computation
-wh = ptdxdt.Whittaker(lmbda=100.0)
+wh = torch_dxdt.Whittaker(lmbda=100.0)
 derivs = wh.d_orders(x, t, orders=[0, 1, 2])
 ```
 
@@ -180,7 +180,7 @@ derivs = wh.d_orders(x, t, orders=[0, 1, 2])
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -189,7 +189,7 @@ t = torch.linspace(0, 2 * torch.pi, 10000, device=device)
 x = torch.sin(t) + 0.01 * torch.randn(10000, device=device)
 
 # All computations happen on GPU
-dx = ptdxdt.dxdt(x, t, kind="savitzky_golay", window_length=21, polyorder=3)
+dx = torch_dxdt.dxdt(x, t, kind="savitzky_golay", window_length=21, polyorder=3)
 
 print(f"Result device: {dx.device}")  # cuda:0
 ```
@@ -200,7 +200,7 @@ print(f"Result device: {dx.device}")  # cuda:0
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 # Batch of signals: (batch_size, time_steps)
 batch_size = 32
@@ -211,7 +211,7 @@ freqs = torch.linspace(1, 5, batch_size).unsqueeze(1)
 x = torch.sin(freqs * t)  # Shape: (32, 100)
 
 # Compute derivatives for all signals at once
-dx = ptdxdt.dxdt(x, t, kind="finite_difference", axis=-1)
+dx = torch_dxdt.dxdt(x, t, kind="finite_difference", axis=-1)
 print(f"Output shape: {dx.shape}")  # (32, 100)
 ```
 
@@ -221,18 +221,18 @@ print(f"Output shape: {dx.shape}")  # (32, 100)
 
 ```python
 import torch
-import ptdxdt
+import torch_dxdt
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 x_clean = torch.sin(t)
 x_noisy = x_clean + 0.2 * torch.randn(100)
 
 # Smooth the data
-x_smooth_sg = ptdxdt.smooth_x(x_noisy, t, kind="savitzky_golay",
+x_smooth_sg = torch_dxdt.smooth_x(x_noisy, t, kind="savitzky_golay",
                                window_length=15, polyorder=3)
-x_smooth_spline = ptdxdt.smooth_x(x_noisy, t, kind="spline", s=0.5)
-x_smooth_kalman = ptdxdt.smooth_x(x_noisy, t, kind="kalman", alpha=0.5)
-x_smooth_whittaker = ptdxdt.smooth_x(x_noisy, t, kind="whittaker", lmbda=100.0)
+x_smooth_spline = torch_dxdt.smooth_x(x_noisy, t, kind="spline", s=0.5)
+x_smooth_kalman = torch_dxdt.smooth_x(x_noisy, t, kind="kalman", alpha=0.5)
+x_smooth_whittaker = torch_dxdt.smooth_x(x_noisy, t, kind="whittaker", lmbda=100.0)
 ```
 
 ## Class-Based Interface
@@ -241,7 +241,7 @@ x_smooth_whittaker = ptdxdt.smooth_x(x_noisy, t, kind="whittaker", lmbda=100.0)
 
 ```python
 import torch
-from ptdxdt import SavitzkyGolay, Spline, Kalman
+from torch_dxdt import SavitzkyGolay, Spline, Kalman
 
 t = torch.linspace(0, 2 * torch.pi, 100)
 x = torch.sin(t) + 0.1 * torch.randn(100)

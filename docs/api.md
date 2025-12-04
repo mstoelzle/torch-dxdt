@@ -3,25 +3,25 @@
 ## Functional Interface
 
 ```{eval-rst}
-.. autofunction:: ptdxdt.dxdt
+.. autofunction:: torch_dxdt.dxdt
 ```
 
 ```{eval-rst}
-.. autofunction:: ptdxdt.dxdt_orders
+.. autofunction:: torch_dxdt.dxdt_orders
 ```
 
 ```{eval-rst}
-.. autofunction:: ptdxdt.smooth_x
+.. autofunction:: torch_dxdt.smooth_x
 ```
 
 ```{eval-rst}
-.. autofunction:: ptdxdt.available_methods
+.. autofunction:: torch_dxdt.available_methods
 ```
 
 ## Base Class
 
 ```{eval-rst}
-.. autoclass:: ptdxdt.Derivative
+.. autoclass:: torch_dxdt.Derivative
    :members:
    :undoc-members:
    :show-inheritance:
@@ -32,7 +32,7 @@
 ### Finite Difference
 
 ```{eval-rst}
-.. autoclass:: ptdxdt.FiniteDifference
+.. autoclass:: torch_dxdt.FiniteDifference
    :members:
    :undoc-members:
    :show-inheritance:
@@ -41,7 +41,7 @@
 ### Savitzky-Golay
 
 ```{eval-rst}
-.. autoclass:: ptdxdt.SavitzkyGolay
+.. autoclass:: torch_dxdt.SavitzkyGolay
    :members:
    :undoc-members:
    :show-inheritance:
@@ -50,7 +50,7 @@
 ### Spectral
 
 ```{eval-rst}
-.. autoclass:: ptdxdt.Spectral
+.. autoclass:: torch_dxdt.Spectral
    :members:
    :undoc-members:
    :show-inheritance:
@@ -59,7 +59,7 @@
 ### Spline
 
 ```{eval-rst}
-.. autoclass:: ptdxdt.Spline
+.. autoclass:: torch_dxdt.Spline
    :members:
    :undoc-members:
    :show-inheritance:
@@ -68,7 +68,7 @@
 ### Kernel
 
 ```{eval-rst}
-.. autoclass:: ptdxdt.Kernel
+.. autoclass:: torch_dxdt.Kernel
    :members:
    :undoc-members:
    :show-inheritance:
@@ -77,7 +77,7 @@
 ### Kalman
 
 ```{eval-rst}
-.. autoclass:: ptdxdt.Kalman
+.. autoclass:: torch_dxdt.Kalman
    :members:
    :undoc-members:
    :show-inheritance:
@@ -86,7 +86,7 @@
 ### Whittaker
 
 ```{eval-rst}
-.. autoclass:: ptdxdt.Whittaker
+.. autoclass:: torch_dxdt.Whittaker
    :members:
    :undoc-members:
    :show-inheritance:

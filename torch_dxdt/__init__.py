@@ -1,5 +1,5 @@
 """
-ptdxdt - Differentiable Numerical Differentiation in PyTorch
+torch_dxdt - Differentiable Numerical Differentiation in PyTorch
 
 A PyTorch implementation of numerical differentiation methods for noisy time
 series data. This package provides differentiable versions of common
@@ -17,16 +17,16 @@ Available Methods:
 
 Example:
     >>> import torch
-    >>> import ptdxdt
+    >>> import torch_dxdt
     >>>
     >>> t = torch.linspace(0, 2 * torch.pi, 100)
     >>> x = torch.sin(t) + 0.1 * torch.randn(100)
     >>>
     >>> # Functional interface
-    >>> dx = ptdxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
+    >>> dx = torch_dxdt.dxdt(x, t, kind="savitzky_golay", window_length=11, polyorder=3)
     >>>
     >>> # Object-oriented interface
-    >>> sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=3)
+    >>> sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3)
     >>> dx = sg.d(x, t)
 """
 

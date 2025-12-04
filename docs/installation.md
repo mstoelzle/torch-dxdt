@@ -2,10 +2,10 @@
 
 ## From PyPI
 
-The easiest way to install **ptdxdt** is via pip:
+The easiest way to install **torch-dxdt** is via pip:
 
 ```bash
-pip install ptdxdt
+pip install torch-dxdt
 ```
 
 ## From Source
@@ -43,9 +43,9 @@ This includes:
 You can also create a dedicated conda environment:
 
 ```bash
-conda create -n ptdxdt python=3.13 -y
-conda activate ptdxdt
-pip install ptdxdt
+conda create -n torch-dxdt python=3.13 -y
+conda activate torch-dxdt
+pip install torch-dxdt
 ```
 
 ## Verifying Installation
@@ -53,7 +53,7 @@ pip install ptdxdt
 To verify the installation:
 
 ```python
-import ptdxdt
-print(ptdxdt.__version__)
-print(ptdxdt.available_methods())
+import torch_dxdt
+print(torch_dxdt.__version__)
+print(torch_dxdt.available_methods())
 ```

@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
-project = "ptdxdt"
+project = "torch-dxdt"
 copyright = "2024, Maximilian Stoelzle"
 author = "Maximilian Stoelzle"
 release = "0.1.0"

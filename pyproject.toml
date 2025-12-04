@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ptdxdt"
+name = "torch-dxdt"
 version = "0.1.0"
 description = "Differentiable numerical differentiation for noisy time series in PyTorch"
 readme = "README.md"
@@ -58,7 +58,7 @@ docs = [
     "sphinx-autodoc-typehints>=1.18"
 ]
 dev = [
-    "ptdxdt[test,docs]",
+    "torch-dxdt[test,docs]",
     "ruff>=0.1.0",
     "mypy>=0.9"
 ]
@@ -71,7 +71,7 @@ Issues = "https://github.com/mstoelzle/torch-dxdt/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["ptdxdt*"]
+include = ["torch_dxdt*"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
