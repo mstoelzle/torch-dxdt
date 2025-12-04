@@ -708,7 +708,7 @@ class TestMultiOrderDerivative:
         # Compare with individual calls
         sg0 = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4, order=1)
         sg0.order = 0  # Use order 0 for smoothing
-        x_smooth_individual = sg0._compute_order(x, t, order=0, axis=-1)
+        x_smooth_individual = sg0._compute_order(x, t, order=0, dim=-1)
 
         sg1 = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4, order=1)
         dx_individual = sg1.d(x, t)

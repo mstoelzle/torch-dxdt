@@ -132,14 +132,14 @@ class SavitzkyGolay(Derivative):
         self._coeffs_cache[cache_key] = kernel
         return kernel
 
-    def d(self, x: torch.Tensor, t: torch.Tensor, axis: int = -1) -> torch.Tensor:
+    def d(self, x: torch.Tensor, t: torch.Tensor, dim: int = -1) -> torch.Tensor:
         """
         Compute the derivative of x with respect to t using Savitzky-Golay.
 
         Args:
             x: Input tensor of shape (..., T) or (T,)
             t: Time points tensor of shape (T,)
-            axis: Axis along which to differentiate. Default -1.
+            dim: Dimension along which to differentiate. Default -1.
 
         Returns:
             Derivative tensor of same shape as x.
@@ -147,8 +147,8 @@ class SavitzkyGolay(Derivative):
         if x.numel() == 0:
             return x.clone()
 
-        # Move differentiation axis to last position
-        x, original_axis = self._move_axis_to_last(x, axis)
+        # Move differentiation dim to last position
+        x, original_dim = self._move_dim_to_last(x, dim)
         original_shape = x.shape
 
         # Get dt
@@ -183,10 +183,10 @@ class SavitzkyGolay(Derivative):
         if len(original_shape) == 1:
             dx = dx.squeeze(0)
 
-        return self._restore_axis(dx, original_axis)
+        return self._restore_dim(dx, original_dim)
 
     def _compute_order(
-        self, x: torch.Tensor, t: torch.Tensor, order: int, axis: int
+        self, x: torch.Tensor, t: torch.Tensor, order: int, dim: int
     ) -> torch.Tensor:
         """Compute a specific derivative order."""
         if order > self.polyorder:
@@ -196,7 +196,7 @@ class SavitzkyGolay(Derivative):
         original_order = self.order
         self.order = order
         try:
-            result = self.d(x, t, axis=axis)
+            result = self.d(x, t, dim=dim)
         finally:
             self.order = original_order
         return result
@@ -206,13 +206,13 @@ class SavitzkyGolay(Derivative):
         x: torch.Tensor,
         t: torch.Tensor,
         orders: Sequence[int] = (1, 2),
-        axis: int = -1,
+        dim: int = -1,
     ) -> dict[int, torch.Tensor]:
         """
         Compute multiple derivative orders simultaneously and efficiently.
 
         This method computes all requested derivative orders with shared
-        preprocessing (axis permutation, padding), avoiding redundant
+        preprocessing (dim permutation, padding), avoiding redundant
         computation. This is more efficient than calling `d()` multiple times.
 
         Args:
@@ -220,7 +220,7 @@ class SavitzkyGolay(Derivative):
             t: Time points tensor of shape (T,)
             orders: Sequence of derivative orders to compute. Default is (1, 2).
                 Order 0 returns the smoothed signal. Maximum order is polyorder.
-            axis: Axis along which to differentiate. Default -1.
+            dim: Dimension along which to differentiate. Default -1.
 
         Returns:
             Dictionary mapping order -> derivative tensor.
@@ -244,8 +244,8 @@ class SavitzkyGolay(Derivative):
         if x.numel() == 0:
             return {order: x.clone() for order in orders}
 
-        # Move differentiation axis to last position
-        x_moved, original_axis = self._move_axis_to_last(x, axis)
+        # Move differentiation dim to last position
+        x_moved, original_dim = self._move_dim_to_last(x, dim)
         was_1d = x_moved.ndim == 1
 
         # Get dt
@@ -283,11 +283,11 @@ class SavitzkyGolay(Derivative):
             if was_1d:
                 dx = dx.squeeze(0)
 
-            results[order] = self._restore_axis(dx, original_axis)
+            results[order] = self._restore_dim(dx, original_dim)
 
         return results
 
-    def smooth(self, x: torch.Tensor, t: torch.Tensor, axis: int = -1) -> torch.Tensor:
+    def smooth(self, x: torch.Tensor, t: torch.Tensor, dim: int = -1) -> torch.Tensor:
         """
         Compute the smoothed version of x using Savitzky-Golay filtering.
 
@@ -297,12 +297,12 @@ class SavitzkyGolay(Derivative):
         Args:
             x: Input tensor of shape (..., T) or (T,)
             t: Time points tensor of shape (T,)
-            axis: Axis along which to smooth. Default -1.
+            dim: Dimension along which to smooth. Default -1.
 
         Returns:
             Smoothed tensor of same shape as x.
         """
-        return self._compute_order(x, t, order=0, axis=axis)
+        return self._compute_order(x, t, order=0, dim=dim)
 
 
 # Alias for backward compatibility

@@ -240,26 +240,26 @@ dx_torch = torch_dxdt.dxdt(x_torch, t_torch, kind="finite_difference", k=1)
 ### Functional Interface
 
 ```python
-torch_dxdt.dxdt(x, t, kind=None, axis=-1, **kwargs)
+torch_dxdt.dxdt(x, t, kind=None, dim=-1, **kwargs)
 ```
 Compute the derivative of `x` with respect to `t`.
 
 ```python
-torch_dxdt.smooth_x(x, t, kind=None, axis=-1, **kwargs)
+torch_dxdt.smooth_x(x, t, kind=None, dim=-1, **kwargs)
 ```
 Compute the smoothed version of `x` (only for methods that support it).
 
 ### Classes
 
 All derivative classes inherit from `torch_dxdt.Derivative` and implement:
-- `d(x, t, axis=-1)`: Compute derivative
-- `d_orders(x, t, orders=[0, 1, 2], axis=-1)`: Compute multiple derivative orders efficiently
-- `smooth(x, t, axis=-1)`: Compute smoothed signal (if supported)
+- `d(x, t, dim=-1)`: Compute derivative
+- `d_orders(x, t, orders=[0, 1, 2], dim=-1)`: Compute multiple derivative orders efficiently
+- `smooth(x, t, dim=-1)`: Compute smoothed signal (if supported)
 
 For higher-order derivatives, pass `order=N` to the constructor (e.g., `SavitzkyGolay(order=2)`) or use `d_orders()`.
 
 ```python
-torch_dxdt.dxdt_orders(x, t, kind=None, orders=(1, 2), axis=-1, **kwargs)
+torch_dxdt.dxdt_orders(x, t, kind=None, orders=(1, 2), dim=-1, **kwargs)
 ```
 Compute multiple derivative orders simultaneously.
 

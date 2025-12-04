@@ -211,7 +211,7 @@ freqs = torch.linspace(1, 5, batch_size).unsqueeze(1)
 x = torch.sin(freqs * t)  # Shape: (32, 100)
 
 # Compute derivatives for all signals at once
-dx = torch_dxdt.dxdt(x, t, kind="finite_difference", axis=-1)
+dx = torch_dxdt.dxdt(x, t, kind="finite_difference", dim=-1)
 print(f"Output shape: {dx.shape}")  # (32, 100)
 ```
 

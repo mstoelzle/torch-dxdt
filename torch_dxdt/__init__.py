@@ -60,7 +60,7 @@ _default_method = "finite_difference"
 _default_kwargs = {"k": 1}
 
 
-def dxdt(x, t, kind=None, axis=-1, **kwargs):
+def dxdt(x, t, kind=None, dim=-1, **kwargs):
     """
     Compute the derivative of x with respect to t using the specified method.
 
@@ -78,7 +78,7 @@ def dxdt(x, t, kind=None, axis=-1, **kwargs):
             - "kernel": Gaussian process kernel methods
             - "kalman": Kalman smoother
             If None, uses finite_difference with k=1.
-        axis: Axis along which to differentiate. Default -1.
+        dim: Dimension along which to differentiate. Default -1.
         **kwargs: Keyword arguments passed to the method constructor.
 
     Returns:
@@ -109,10 +109,10 @@ def dxdt(x, t, kind=None, axis=-1, **kwargs):
 
     method_class = _methods[kind]
     method = method_class(**kwargs)
-    return method.d(x, t, axis=axis)
+    return method.d(x, t, dim=dim)
 
 
-def smooth_x(x, t, kind=None, axis=-1, **kwargs):
+def smooth_x(x, t, kind=None, dim=-1, **kwargs):
     """
     Compute the smoothed version of x using the specified method.
 
@@ -126,7 +126,7 @@ def smooth_x(x, t, kind=None, axis=-1, **kwargs):
         x: torch.Tensor of shape (..., T) containing the signal values.
         t: torch.Tensor of shape (T,) containing the time points.
         kind: Method name (see dxdt for available methods).
-        axis: Axis along which to smooth. Default -1.
+        dim: Dimension along which to smooth. Default -1.
         **kwargs: Keyword arguments passed to the method constructor.
 
     Returns:
@@ -146,10 +146,10 @@ def smooth_x(x, t, kind=None, axis=-1, **kwargs):
 
     method_class = _methods[kind]
     method = method_class(**kwargs)
-    return method.smooth(x, t, axis=axis)
+    return method.smooth(x, t, dim=dim)
 
 
-def dxdt_orders(x, t, orders=(1, 2), kind=None, axis=-1, **kwargs):
+def dxdt_orders(x, t, orders=(1, 2), kind=None, dim=-1, **kwargs):
     """
     Compute multiple derivative orders simultaneously.
 
@@ -165,7 +165,7 @@ def dxdt_orders(x, t, orders=(1, 2), kind=None, axis=-1, **kwargs):
         kind: Method name. Currently best supported by:
             - "savitzky_golay": Most efficient, computes all orders in one pass
             Other methods fall back to computing each order separately.
-        axis: Axis along which to differentiate. Default -1.
+        dim: Dimension along which to differentiate. Default -1.
         **kwargs: Keyword arguments passed to the method constructor.
 
     Returns:
@@ -192,7 +192,7 @@ def dxdt_orders(x, t, orders=(1, 2), kind=None, axis=-1, **kwargs):
 
     method_class = _methods[kind]
     method = method_class(**kwargs)
-    return method.d_orders(x, t, orders=orders, axis=axis)
+    return method.d_orders(x, t, orders=orders, dim=dim)
 
 
 # List available methods

@@ -216,14 +216,14 @@ class Whittaker(Derivative):
 
         return dz
 
-    def d(self, x: torch.Tensor, t: torch.Tensor, axis: int = -1) -> torch.Tensor:
+    def d(self, x: torch.Tensor, t: torch.Tensor, dim: int = -1) -> torch.Tensor:
         """
         Compute the derivative of x with respect to t using Whittaker smoothing.
 
         Args:
             x: Input tensor of shape (..., T) or (T,)
             t: Time points tensor of shape (T,)
-            axis: Axis along which to differentiate. Default -1.
+            dim: Dimension along which to differentiate. Default -1.
 
         Returns:
             Derivative tensor of same shape as x.
@@ -231,8 +231,8 @@ class Whittaker(Derivative):
         if x.numel() == 0:
             return x.clone()
 
-        # Move differentiation axis to last position
-        x, original_axis = self._move_axis_to_last(x, axis)
+        # Move differentiation dim to last position
+        x, original_dim = self._move_dim_to_last(x, dim)
 
         # Handle 1D input
         was_1d = x.ndim == 1
@@ -260,16 +260,16 @@ class Whittaker(Derivative):
         if was_1d:
             dx = dx.squeeze(0)
 
-        return self._restore_axis(dx, original_axis)
+        return self._restore_dim(dx, original_dim)
 
-    def smooth(self, x: torch.Tensor, t: torch.Tensor, axis: int = -1) -> torch.Tensor:
+    def smooth(self, x: torch.Tensor, t: torch.Tensor, dim: int = -1) -> torch.Tensor:
         """
         Compute the smoothed version of x using Whittaker-Eilers filtering.
 
         Args:
             x: Input tensor of shape (..., T) or (T,)
             t: Time points tensor of shape (T,) (not used but kept for API consistency)
-            axis: Axis along which to smooth. Default -1.
+            dim: Dimension along which to smooth. Default -1.
 
         Returns:
             Smoothed tensor of same shape as x.
@@ -277,8 +277,8 @@ class Whittaker(Derivative):
         if x.numel() == 0:
             return x.clone()
 
-        # Move axis to last position
-        x, original_axis = self._move_axis_to_last(x, axis)
+        # Move dim to last position
+        x, original_dim = self._move_dim_to_last(x, dim)
 
         # Handle 1D input
         was_1d = x.ndim == 1
@@ -300,10 +300,10 @@ class Whittaker(Derivative):
         if was_1d:
             z = z.squeeze(0)
 
-        return self._restore_axis(z, original_axis)
+        return self._restore_dim(z, original_dim)
 
     def _compute_order(
-        self, x: torch.Tensor, t: torch.Tensor, order: int, axis: int
+        self, x: torch.Tensor, t: torch.Tensor, order: int, dim: int
     ) -> torch.Tensor:
         """Compute a specific derivative order."""
         if order > 2:
@@ -312,8 +312,8 @@ class Whittaker(Derivative):
         if x.numel() == 0:
             return x.clone()
 
-        # Move differentiation axis to last position
-        x, original_axis = self._move_axis_to_last(x, axis)
+        # Move differentiation dim to last position
+        x, original_dim = self._move_dim_to_last(x, dim)
 
         # Handle 1D input
         was_1d = x.ndim == 1
@@ -341,14 +341,14 @@ class Whittaker(Derivative):
         if was_1d:
             dx = dx.squeeze(0)
 
-        return self._restore_axis(dx, original_axis)
+        return self._restore_dim(dx, original_dim)
 
     def d_orders(
         self,
         x: torch.Tensor,
         t: torch.Tensor,
         orders: Sequence[int] = (1, 2),
-        axis: int = -1,
+        dim: int = -1,
     ) -> dict[int, torch.Tensor]:
         """
         Compute multiple derivative orders simultaneously and efficiently.
@@ -362,7 +362,7 @@ class Whittaker(Derivative):
             t: Time points tensor of shape (T,)
             orders: Sequence of derivative orders to compute. Default is (1, 2).
                 Order 0 returns the smoothed signal.
-            axis: Axis along which to differentiate. Default -1.
+            dim: Dimension along which to differentiate. Default -1.
 
         Returns:
             Dictionary mapping order -> derivative tensor.
@@ -384,8 +384,8 @@ class Whittaker(Derivative):
         if x.numel() == 0:
             return {order: x.clone() for order in orders}
 
-        # Move differentiation axis to last position
-        x_moved, original_axis = self._move_axis_to_last(x, axis)
+        # Move differentiation dim to last position
+        x_moved, original_dim = self._move_dim_to_last(x, dim)
         was_1d = x_moved.ndim == 1
 
         # Get dt
@@ -415,6 +415,6 @@ class Whittaker(Derivative):
             dx = dx.reshape(*batch_shape, T)
             if was_1d:
                 dx = dx.squeeze(0)
-            results[order] = self._restore_axis(dx, original_axis)
+            results[order] = self._restore_dim(dx, original_dim)
 
         return results

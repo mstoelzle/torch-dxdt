@@ -75,14 +75,14 @@ class FiniteDifference(Derivative):
 
         return self._kernel
 
-    def d(self, x: torch.Tensor, t: torch.Tensor, axis: int = -1) -> torch.Tensor:
+    def d(self, x: torch.Tensor, t: torch.Tensor, dim: int = -1) -> torch.Tensor:
         """
         Compute the derivative of x with respect to t using finite differences.
 
         Args:
             x: Input tensor of shape (..., T) or (T,)
             t: Time points tensor of shape (T,)
-            axis: Axis along which to differentiate. Default -1.
+            dim: Dimension along which to differentiate. Default -1.
 
         Returns:
             Derivative tensor of same shape as x.
@@ -91,8 +91,8 @@ class FiniteDifference(Derivative):
         if x.numel() == 0:
             return x.clone()
 
-        # Move differentiation axis to last position
-        x, original_axis = self._move_axis_to_last(x, axis)
+        # Move differentiation dim to last position
+        x, original_dim = self._move_dim_to_last(x, dim)
         original_shape = x.shape
 
         # Get dt (assuming uniform spacing)
@@ -142,4 +142,4 @@ class FiniteDifference(Derivative):
         if len(original_shape) == 1:
             dx = dx.squeeze(0)
 
-        return self._restore_axis(dx, original_axis)
+        return self._restore_dim(dx, original_dim)

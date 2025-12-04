@@ -514,7 +514,7 @@ class TestAutodiffVsNumerical:
 
         # Compute numerical derivatives for batch
         x_detached = x_batch.detach()
-        dx_numerical = torch_dxdt.dxdt(x_detached, t, kind="spectral", axis=-1)
+        dx_numerical = torch_dxdt.dxdt(x_detached, t, kind="spectral", dim=-1)
 
         # Compare
         margin = 3
