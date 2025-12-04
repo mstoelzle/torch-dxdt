@@ -13,6 +13,7 @@ Available Methods:
     - Spline: Smoothing spline differentiation
     - Kernel: Gaussian process kernel methods
     - Kalman: Kalman smoother for probabilistic differentiation
+    - Whittaker: Whittaker-Eilers global smoother with penalized least squares
 
 Example:
     >>> import torch
@@ -85,11 +86,12 @@ def dxdt(x, t, kind=None, axis=-1, **kwargs):
 
     Available kwargs by method:
         - finite_difference: k (window size), periodic (bool)
-        - savitzky_golay: window_length, polyorder, deriv, periodic
+        - savitzky_golay: window_length, polyorder, order, periodic
         - spectral: order, filter_func
         - spline: s (smoothing parameter)
         - kernel: sigma, lmbd, kernel
         - kalman: alpha
+        - whittaker: lmbda (smoothing parameter), d_order (difference order)
 
     Example:
         >>> t = torch.linspace(0, 2*torch.pi, 100)
@@ -118,6 +120,7 @@ def smooth_x(x, t, kind=None, axis=-1, **kwargs):
     - spline
     - kernel
     - kalman
+    - whittaker
 
     Args:
         x: torch.Tensor of shape (..., T) containing the signal values.

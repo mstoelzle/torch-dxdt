@@ -260,6 +260,60 @@ x_smooth = kal.smooth(x, t)
 
 ---
 
+## Whittaker-Eilers Smoother
+
+The `Whittaker` class uses penalized least squares with Cholesky decomposition for global smoothing.
+
+### Theory
+
+Whittaker-Eilers smoothing solves the same optimization as Spline but uses efficient Cholesky factorization:
+
+$$\min_z \|x - z\|^2 + \lambda \|D^d z\|^2$$
+
+where $D^d$ is the $d$-th order difference matrix and $\lambda$ controls smoothing. The system $(I + \lambda D^T D)z = x$ is solved using Cholesky decomposition, making it efficient and fully differentiable.
+
+### Usage
+
+```python
+import ptdxdt
+
+# Basic usage
+wh = ptdxdt.Whittaker(lmbda=100.0)
+
+# More smoothing
+wh = ptdxdt.Whittaker(lmbda=1000.0)
+
+# Different difference order
+wh = ptdxdt.Whittaker(lmbda=100.0, d_order=3)
+
+# Get smoothed signal
+x_smooth = wh.smooth(x, t)
+
+# Compute derivative
+dx = wh.d(x, t)
+
+# Compute multiple derivative orders efficiently
+derivs = wh.d_orders(x, t, orders=[0, 1, 2])
+x_smooth, dx, d2x = derivs[0], derivs[1], derivs[2]
+```
+
+### Parameters
+
+- `lmbda` (float): Smoothing parameter. Larger values give smoother results. Typical range: 1 to 1e6.
+- `d_order` (int): Order of the difference penalty. Default: 2
+  - 1: Penalizes first differences (piecewise constant)
+  - 2: Penalizes second differences (piecewise linear)
+  - 3: Penalizes third differences (smoother curves)
+
+### When to Use
+
+- Data is noisy and needs global smoothing
+- You want explicit control over smoothness vs. fidelity
+- You need efficient computation with full autodiff support
+- You want to compute multiple derivative orders efficiently
+
+---
+
 ## Method Comparison
 
 | Method | Speed | Noise Robustness | Accuracy (Clean Data) | Differentiable |
@@ -270,3 +324,4 @@ x_smooth = kal.smooth(x, t)
 | Spline | ⚡⚡ | ✅ High | ✅ Good | ✅ Yes |
 | Kernel | ⚡ | ✅ High | ✅ Good | ✅ Yes |
 | Kalman | ⚡ | ✅ High | ✅ Good | ✅ Yes |
+| Whittaker | ⚡⚡ | ✅ High | ✅ Good | ✅ Yes |

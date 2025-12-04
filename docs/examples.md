@@ -1,5 +1,18 @@
 # Examples
 
+## Jupyter Notebook
+
+For an interactive comparison of all methods with visualizations and benchmarks, see the Jupyter notebook:
+
+📓 **[examples/comparing_methods.ipynb](https://github.com/mstoelzle/torch-dxdt/blob/main/examples/comparing_methods.ipynb)**
+
+The notebook includes:
+- Visual comparison of all 7 differentiation methods
+- RMSE accuracy analysis across noise levels (no noise, low noise, high noise)
+- Computational efficiency benchmarks (forward and backward pass timing)
+- Parameter tuning examples for noisy data
+- Smoothing method comparisons
+
 ## Basic Usage
 
 ### Computing Derivatives of Smooth Functions
@@ -52,6 +65,7 @@ dx_sg = ptdxdt.dxdt(x_noisy, t, kind="savitzky_golay",
 dx_spline = ptdxdt.dxdt(x_noisy, t, kind="spline", s=0.1)
 dx_kernel = ptdxdt.dxdt(x_noisy, t, kind="kernel", sigma=0.5, lmbd=0.1)
 dx_kalman = ptdxdt.dxdt(x_noisy, t, kind="kalman", alpha=0.1)
+dx_whittaker = ptdxdt.dxdt(x_noisy, t, kind="whittaker", lmbda=100.0)
 ```
 
 ## Autodiff Integration
@@ -130,6 +144,36 @@ d2x = ptdxdt.dxdt(x, t, kind="savitzky_golay",
 d2x_spectral = ptdxdt.dxdt(x, t, kind="spectral", order=2)
 ```
 
+### Computing Multiple Derivative Orders Efficiently
+
+Use `d_orders()` or `dxdt_orders()` to compute multiple derivatives in one pass:
+
+```python
+import torch
+import ptdxdt
+
+t = torch.linspace(0, 2 * torch.pi, 100)
+x = torch.sin(t) + 0.1 * torch.randn(100)
+
+# Compute smoothed signal, first and second derivatives simultaneously
+# This is more efficient than calling dxdt() multiple times
+derivs = ptdxdt.dxdt_orders(x, t, kind="savitzky_golay",
+                            window_length=11, polyorder=4,
+                            orders=[0, 1, 2])
+
+x_smooth = derivs[0]  # Smoothed signal
+dx = derivs[1]        # First derivative  
+d2x = derivs[2]       # Second derivative
+
+# Or using the class interface
+sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=4)
+derivs = sg.d_orders(x, t, orders=[0, 1, 2])
+
+# Whittaker also supports efficient multi-order computation
+wh = ptdxdt.Whittaker(lmbda=100.0)
+derivs = wh.d_orders(x, t, orders=[0, 1, 2])
+```
+
 ## GPU Acceleration
 
 ### Moving Computations to GPU
@@ -188,6 +232,7 @@ x_smooth_sg = ptdxdt.smooth_x(x_noisy, t, kind="savitzky_golay",
                                window_length=15, polyorder=3)
 x_smooth_spline = ptdxdt.smooth_x(x_noisy, t, kind="spline", s=0.5)
 x_smooth_kalman = ptdxdt.smooth_x(x_noisy, t, kind="kalman", alpha=0.5)
+x_smooth_whittaker = ptdxdt.smooth_x(x_noisy, t, kind="whittaker", lmbda=100.0)
 ```
 
 ## Class-Based Interface
@@ -212,5 +257,5 @@ dx_spline = spline.d(x, t)
 dx_kalman = kalman.d(x, t)
 
 # Get smoothed data
-x_smooth = sg.smooth_x(x, t)
+x_smooth = sg.smooth(x, t)
 ```

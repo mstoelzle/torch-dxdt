@@ -19,7 +19,8 @@ examples
 
 - 🔥 **Fully Differentiable**: All methods support PyTorch autograd for backpropagation
 - 🚀 **GPU Accelerated**: Leverage PyTorch's GPU support for fast computation
-- 📊 **Multiple Methods**: Six differentiation algorithms for different use cases
+- 📊 **Multiple Methods**: Seven differentiation algorithms for different use cases
+- 📈 **Higher-Order Derivatives**: Support for 2nd-order and multi-order derivative computation
 - 🔧 **Easy API**: Simple functional and object-oriented interfaces
 - 🧪 **Well Tested**: Validated against the reference `derivative` package
 

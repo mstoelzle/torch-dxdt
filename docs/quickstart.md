@@ -44,7 +44,7 @@ To see all available differentiation methods:
 
 ```python
 print(ptdxdt.available_methods())
-# ['finite_difference', 'savitzky_golay', 'spectral', 'spline', 'kernel', 'kalman']
+# ['finite_difference', 'savitzky_golay', 'spectral', 'spline', 'kernel', 'kalman', 'whittaker']
 ```
 
 ## Working with Gradients

@@ -7,6 +7,10 @@
 ```
 
 ```{eval-rst}
+.. autofunction:: ptdxdt.dxdt_orders
+```
+
+```{eval-rst}
 .. autofunction:: ptdxdt.smooth_x
 ```
 
@@ -74,6 +78,15 @@
 
 ```{eval-rst}
 .. autoclass:: ptdxdt.Kalman
+   :members:
+   :undoc-members:
+   :show-inheritance:
+```
+
+### Whittaker
+
+```{eval-rst}
+.. autoclass:: ptdxdt.Whittaker
    :members:
    :undoc-members:
    :show-inheritance:

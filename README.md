@@ -123,13 +123,18 @@ dx = ptdxdt.dxdt(x, t, kind="whittaker", lmbda=1000.0, d_order=2)
 Several methods support computing higher-order derivatives:
 
 ```python
-# Second-order derivative with Savitzky-Golay
-sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=4)
-d2x = sg.d(x, t, order=2)  # Second derivative
+# Second-order derivative with Savitzky-Golay (order is a constructor parameter)
+sg = ptdxdt.SavitzkyGolay(window_length=11, polyorder=4, order=2)
+d2x = sg.d(x, t)  # Second derivative
 
-# Or via functional interface
+# Or via functional interface (order passed as kwarg to constructor)
 d2x = ptdxdt.dxdt(x, t, kind="savitzky_golay", 
                   window_length=11, polyorder=4, order=2)
+
+# Whittaker also supports second-order derivatives via d_orders()
+wh = ptdxdt.Whittaker(lmbda=100.0)
+derivs = wh.d_orders(x, t, orders=[1, 2])
+dx, d2x = derivs[1], derivs[2]
 ```
 
 ## Multi-Order Derivatives
@@ -248,14 +253,28 @@ Compute the smoothed version of `x` (only for methods that support it).
 
 All derivative classes inherit from `ptdxdt.Derivative` and implement:
 - `d(x, t, axis=-1)`: Compute derivative
-- `d(x, t, axis=-1, order=2)`: Compute higher-order derivative (some methods)
 - `d_orders(x, t, orders=[0, 1, 2], axis=-1)`: Compute multiple derivative orders efficiently
 - `smooth(x, t, axis=-1)`: Compute smoothed signal (if supported)
+
+For higher-order derivatives, pass `order=N` to the constructor (e.g., `SavitzkyGolay(order=2)`) or use `d_orders()`.
 
 ```python
 ptdxdt.dxdt_orders(x, t, kind=None, orders=(1, 2), axis=-1, **kwargs)
 ```
 Compute multiple derivative orders simultaneously.
+
+## Examples
+
+For a comprehensive comparison of all methods with varying noise levels and computational benchmarks, see the Jupyter notebook:
+
+📓 **[examples/comparing_methods.ipynb](examples/comparing_methods.ipynb)**
+
+The notebook includes:
+- Visual comparison of all 7 differentiation methods
+- RMSE accuracy analysis across noise levels (no noise, low noise, high noise)
+- Computational efficiency benchmarks (forward and backward pass timing)
+- Parameter tuning examples for noisy data
+- Smoothing method comparisons
 
 ## Requirements
 

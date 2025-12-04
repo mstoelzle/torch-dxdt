@@ -29,7 +29,7 @@ pip install -e ".[dev]"
 This includes:
 - Testing dependencies (pytest, derivative)
 - Documentation dependencies (sphinx, sphinx-rtd-theme)
-- Code quality tools (black, flake8, isort, mypy)
+- Code quality tools (ruff, mypy)
 
 ## Requirements
 
