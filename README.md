@@ -292,10 +292,10 @@ If you use this package in your research, please consider citing:
 
 ```bibtex
 @software{ptdxdt,
-  author = {Stoelzle, Maximilian},
+  author = {Stölzle, Maximilian},
   title = {ptdxdt: Differentiable Numerical Differentiation in PyTorch},
   url = {https://github.com/mstoelzle/torch-dxdt},
-  year = {2024}
+  year = {2025}
 }
 ```
 
