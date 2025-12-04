@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: If you use this software, please cite it as below.
+title: torch-dxdt: Numerical Derivatives of Timeseries Data in PyTorch
+version: "0.1.1"
+doi: 10.5281/zenodo.17819396
+url: https://doi.org/10.5281/zenodo.17819396
+authors:
+  - family-names: Stölzle
+    given-names: Maximilian
+identifiers:
+  - type: swh
+    value: swh:1:dir:500e480391c5444fd11a69b4becfa73675f56d4d;origin=https://doi.org/10.5281/zenodo.17819395;visit=swh:1:snp:a3e3059743b92910f24c139188e2d060bb13e212;anchor=swh:1:rel:cd41e36d7c0e18e564055508d6a446244c392617;path=mstoelzle-torch-dxdt-f8b2b65
+preferred-citation:
+  type: software
+  title: torch-dxdt: Numerical Derivatives of Timeseries Data in PyTorch
+  authors:
+    - family-names: Stölzle
+      given-names: Maximilian
+  year: 2025
+  month: 12
+  doi: 10.5281/zenodo.17819396
+  url: https://doi.org/10.5281/zenodo.17819396

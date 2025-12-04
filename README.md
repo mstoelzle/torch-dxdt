@@ -3,6 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/torch_dxdt.svg)](https://badge.fury.io/py/torch-dxdt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![DOI](https://zenodo.org/badge/1109862737.svg)](https://doi.org/10.5281/zenodo.17819395)
 
 **torch-dxdt** is a PyTorch implementation of numerical differentiation methods for (noisy) time series data. It provides differentiable versions of common differentiation algorithms, allowing them to be used as part of neural network training pipelines, physics-informed neural networks (PINNs), and other gradient-based optimization tasks.
 
@@ -310,11 +311,22 @@ pytest tests/test_correctness.py -v
 If you use this package in your research, please consider citing:
 
 ```bibtex
-@software{torch-dxdt,
-  author = {Stölzle, Maximilian},
-  title = {torch-dxdt: Differentiable Numerical Differentiation in PyTorch},
-  url = {https://github.com/mstoelzle/torch-dxdt},
-  year = {2025}
+@software{stolzle2025torchdxdt,
+  author       = {Stölzle, Maximilian},
+  title        = {torch-dxdt: Numerical Derivatives of Timeseries
+                   Data in PyTorch
+                  },
+  month        = {dec},
+  year         = {2025},
+  publisher    = {GitHub},
+  doi          = {10.5281/zenodo.17819396},
+  url          = {https://doi.org/10.5281/zenodo.17819396},
+  swhid        = {swh:1:dir:500e480391c5444fd11a69b4becfa73675f56d4d
+                   ;origin=https://doi.org/10.5281/zenodo.17819395;vi
+                   sit=swh:1:snp:a3e3059743b92910f24c139188e2d060bb13
+                   e212;anchor=swh:1:rel:cd41e36d7c0e18e564055508d6a4
+                   46244c392617;path=mstoelzle-torch-dxdt-f8b2b65
+                  },
 }
 ```
 
