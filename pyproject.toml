@@ -1,0 +1,101 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ptdxdt"
+version = "0.1.0"
+description = "Differentiable numerical differentiation for noisy time series in PyTorch"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Maximilian Stölzle", email = "maximilian@stoelzle.ch"}
+]
+keywords = [
+    "pytorch",
+    "differentiation",
+    "numerical-differentiation",
+    "time-series",
+    "deep-learning",
+    "automatic-differentiation",
+    "signal-processing",
+    "kalman-filter",
+    "savitzky-golay"
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=1.10.0",
+    "scipy>=1.7.0",
+    "numpy>=1.20.0"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=6.0",
+    "derivative>=0.6.0",
+    "matplotlib>=3.0"
+]
+docs = [
+    "sphinx>=4.0",
+    "sphinx-rtd-theme>=1.0",
+    "sphinx-copybutton>=0.5",
+    "myst-parser>=0.18",
+    "sphinx-autodoc-typehints>=1.18"
+]
+dev = [
+    "ptdxdt[test,docs]",
+    "ruff>=0.1.0",
+    "mypy>=0.9"
+]
+
+[project.urls]
+Homepage = "https://github.com/mstoelzle/torch-dxdt"
+Documentation = "https://mstoelzle.github.io/torch-dxdt"
+Repository = "https://github.com/mstoelzle/torch-dxdt"
+Issues = "https://github.com/mstoelzle/torch-dxdt/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ptdxdt*"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q -v"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]  # Line too long handled by formatter
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
