@@ -128,9 +128,11 @@ class Spline(Derivative):
         if x.numel() == 0:
             return x.clone()
 
-        if x.shape[-1] <= self.order:
+        # Check length along the specified dim
+        time_len = x.shape[dim]
+        if time_len <= self.order:
             raise TypeError(
-                f"Input length ({x.shape[-1]}) must be > order ({self.order})"
+                f"Input length ({time_len}) must be > order ({self.order})"
             )
 
         # Move differentiation dim to last position

@@ -471,6 +471,234 @@ class TestBatchProcessing:
         assert not torch.isnan(result).any(), f"NaN in result for {method_name}"
 
 
+class TestArbitraryDimensions:
+    """Test that methods correctly handle tensors with arbitrary dimensions."""
+
+    @pytest.mark.parametrize(
+        "method_name,kwargs",
+        [
+            ("spline", {"s": 0.01}),
+            ("finite_difference", {"k": 1}),
+            ("savitzky_golay", {"window_length": 5, "polyorder": 2}),
+            ("kernel", {"sigma": 0.5, "lmbd": 0.1}),
+            ("kalman", {"alpha": 1.0}),
+            ("whittaker", {"lmbda": 100.0}),
+        ],
+    )
+    def test_dim_parameter_2d(self, method_name, kwargs):
+        """Test differentiation along specified dim for 2D tensors."""
+        T = 50
+        t = torch.linspace(0, 2 * torch.pi, T, dtype=torch.float64)
+        
+        # Shape: (3, T) - differentiate along dim=1
+        x = torch.stack([torch.sin(t), torch.cos(t), torch.sin(2 * t)], dim=0)
+        
+        method_class = getattr(torch_dxdt, method_name.title().replace("_", ""))
+        if method_name == "savitzky_golay":
+            method_class = torch_dxdt.SavitzkyGolay
+        elif method_name == "finite_difference":
+            method_class = torch_dxdt.FiniteDifference
+        
+        method = method_class(**kwargs)
+        
+        # Test dim=1 (last dim)
+        result_dim1 = method.d(x, t, dim=1)
+        assert result_dim1.shape == x.shape
+        
+        # Test dim=-1 (equivalent to dim=1)
+        result_dim_neg1 = method.d(x, t, dim=-1)
+        torch.testing.assert_close(result_dim1, result_dim_neg1)
+        
+        # Transpose and test dim=0
+        x_T = x.T  # Shape: (T, 3)
+        result_dim0 = method.d(x_T, t, dim=0)
+        assert result_dim0.shape == x_T.shape
+        
+        # Results should match when transposed back
+        torch.testing.assert_close(result_dim0.T, result_dim1, rtol=1e-5, atol=1e-5)
+
+    @pytest.mark.parametrize(
+        "method_name,kwargs",
+        [
+            ("spline", {"s": 0.01}),
+            ("finite_difference", {"k": 1}),
+            ("savitzky_golay", {"window_length": 5, "polyorder": 2}),
+            ("kernel", {"sigma": 0.5, "lmbd": 0.1}),
+            ("kalman", {"alpha": 1.0}),
+            ("whittaker", {"lmbda": 100.0}),
+        ],
+    )
+    def test_dim_parameter_3d(self, method_name, kwargs):
+        """Test differentiation along specified dim for 3D tensors."""
+        T = 40
+        t = torch.linspace(0, 2 * torch.pi, T, dtype=torch.float64)
+        
+        # Create 3D tensor with shape (2, 3, T)
+        x_base = torch.sin(t)
+        x = torch.stack([
+            torch.stack([x_base, x_base * 2, x_base * 3], dim=0),
+            torch.stack([x_base * 0.5, x_base * 1.5, x_base * 2.5], dim=0),
+        ], dim=0)
+        assert x.shape == (2, 3, T)
+        
+        method_class = getattr(torch_dxdt, method_name.title().replace("_", ""))
+        if method_name == "savitzky_golay":
+            method_class = torch_dxdt.SavitzkyGolay
+        elif method_name == "finite_difference":
+            method_class = torch_dxdt.FiniteDifference
+        
+        method = method_class(**kwargs)
+        
+        # Test dim=2 (last dim, time axis)
+        result = method.d(x, t, dim=2)
+        assert result.shape == x.shape
+        assert not torch.isnan(result).any()
+        
+        # Test dim=-1 (equivalent)
+        result_neg = method.d(x, t, dim=-1)
+        torch.testing.assert_close(result, result_neg)
+
+    @pytest.mark.parametrize(
+        "method_name,kwargs",
+        [
+            ("spline", {"s": 0.01}),
+            ("finite_difference", {"k": 1}),
+            ("savitzky_golay", {"window_length": 5, "polyorder": 2}),
+            ("kernel", {"sigma": 0.5, "lmbd": 0.1}),
+            ("kalman", {"alpha": 1.0}),
+            ("whittaker", {"lmbda": 100.0}),
+        ],
+    )
+    def test_dim_parameter_4d(self, method_name, kwargs):
+        """Test differentiation along specified dim for 4D tensors."""
+        T = 30
+        t = torch.linspace(0, 2 * torch.pi, T, dtype=torch.float64)
+        
+        # Create 4D tensor with shape (2, 2, 3, T)
+        x_base = torch.sin(t)
+        x = x_base.expand(2, 2, 3, T).clone()
+        # Add variation
+        x[0, 0, :, :] *= 1.0
+        x[0, 1, :, :] *= 1.5
+        x[1, 0, :, :] *= 2.0
+        x[1, 1, :, :] *= 2.5
+        
+        method_class = getattr(torch_dxdt, method_name.title().replace("_", ""))
+        if method_name == "savitzky_golay":
+            method_class = torch_dxdt.SavitzkyGolay
+        elif method_name == "finite_difference":
+            method_class = torch_dxdt.FiniteDifference
+        
+        method = method_class(**kwargs)
+        
+        # Test dim=3 (last dim)
+        result = method.d(x, t, dim=3)
+        assert result.shape == x.shape
+        assert not torch.isnan(result).any()
+        
+        # Test dim=-1 (equivalent)
+        result_neg = method.d(x, t, dim=-1)
+        torch.testing.assert_close(result, result_neg)
+
+    @pytest.mark.parametrize(
+        "method_name,kwargs",
+        [
+            ("spline", {"s": 0.01}),
+            ("finite_difference", {"k": 1}),
+            ("savitzky_golay", {"window_length": 5, "polyorder": 2}),
+            ("kernel", {"sigma": 0.5, "lmbd": 0.1}),
+            ("kalman", {"alpha": 1.0}),
+            ("whittaker", {"lmbda": 100.0}),
+        ],
+    )
+    def test_dim_middle_axis(self, method_name, kwargs):
+        """Test differentiation along a middle dimension (not first or last)."""
+        T = 40
+        t = torch.linspace(0, 2 * torch.pi, T, dtype=torch.float64)
+        
+        # Create 3D tensor with shape (2, T, 3) - time in the middle
+        x_base = torch.sin(t)
+        x = torch.stack([
+            torch.stack([x_base, x_base * 2, x_base * 3], dim=1),
+            torch.stack([x_base * 0.5, x_base * 1.5, x_base * 2.5], dim=1),
+        ], dim=0)
+        assert x.shape == (2, T, 3)
+        
+        method_class = getattr(torch_dxdt, method_name.title().replace("_", ""))
+        if method_name == "savitzky_golay":
+            method_class = torch_dxdt.SavitzkyGolay
+        elif method_name == "finite_difference":
+            method_class = torch_dxdt.FiniteDifference
+        
+        method = method_class(**kwargs)
+        
+        # Test dim=1 (middle dimension)
+        result = method.d(x, t, dim=1)
+        assert result.shape == x.shape
+        assert not torch.isnan(result).any()
+        
+        # Verify result is consistent: permute, compute, permute back
+        x_permuted = x.permute(0, 2, 1)  # (2, 3, T)
+        result_via_permute = method.d(x_permuted, t, dim=-1).permute(0, 2, 1)
+        torch.testing.assert_close(result, result_via_permute, rtol=1e-5, atol=1e-5)
+
+    def test_spline_consistency_across_dims(self):
+        """Specifically test Spline method handles dim parameter correctly."""
+        T = 50
+        t = torch.linspace(0, 2 * torch.pi, T, dtype=torch.float64)
+        
+        # Create a signal
+        x_1d = torch.sin(t)
+        
+        spline = torch_dxdt.Spline(s=0.01)
+        
+        # 1D result
+        dx_1d = spline.d(x_1d, t)
+        
+        # 2D: (1, T) with dim=-1
+        x_2d = x_1d.unsqueeze(0)
+        dx_2d = spline.d(x_2d, t, dim=-1)
+        torch.testing.assert_close(dx_2d.squeeze(0), dx_1d)
+        
+        # 2D: (T, 1) with dim=0
+        x_2d_t = x_1d.unsqueeze(1)
+        dx_2d_t = spline.d(x_2d_t, t, dim=0)
+        torch.testing.assert_close(dx_2d_t.squeeze(1), dx_1d)
+        
+        # 3D: (1, T, 1) with dim=1
+        x_3d = x_1d.unsqueeze(0).unsqueeze(2)
+        dx_3d = spline.d(x_3d, t, dim=1)
+        torch.testing.assert_close(dx_3d.squeeze(), dx_1d)
+        
+        # 4D: (1, 1, T, 1) with dim=2
+        x_4d = x_1d.unsqueeze(0).unsqueeze(0).unsqueeze(3)
+        dx_4d = spline.d(x_4d, t, dim=2)
+        torch.testing.assert_close(dx_4d.squeeze(), dx_1d)
+
+    def test_spline_smooth_with_dim(self):
+        """Test that Spline.smooth() also respects the dim parameter."""
+        T = 50
+        t = torch.linspace(0, 2 * torch.pi, T, dtype=torch.float64)
+        
+        # Noisy signal
+        torch.manual_seed(42)
+        x_1d = torch.sin(t) + 0.1 * torch.randn(T, dtype=torch.float64)
+        
+        spline = torch_dxdt.Spline(s=0.1)
+        
+        # 1D result
+        smooth_1d = spline.smooth(x_1d, t)
+        
+        # 3D: (2, T, 3) with dim=1
+        x_3d = x_1d.unsqueeze(0).unsqueeze(2).expand(2, T, 3).clone()
+        smooth_3d = spline.smooth(x_3d, t, dim=1)
+        
+        assert smooth_3d.shape == x_3d.shape
+        # Each slice should match the 1D result
+        torch.testing.assert_close(smooth_3d[0, :, 0], smooth_1d)
+        torch.testing.assert_close(smooth_3d[1, :, 2], smooth_1d)
+
+
 class TestEdgeCases:
     """Test edge cases and error handling."""
 
