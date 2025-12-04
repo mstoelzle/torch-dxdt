@@ -99,8 +99,6 @@ class Spline(Derivative):
         """
         Compute derivative of smoothed signal using central differences.
         """
-        z.shape[-1]
-
         # Use central differences for interior points
         dz = torch.zeros_like(z)
 
