@@ -145,6 +145,93 @@ class TestSavitzkyGolayParity:
             result[margin:-margin], ref[margin:-margin], rtol=TOLERANCE, atol=TOLERANCE
         )
 
+    def test_pad_modes(self):
+        """Test Savitzky-Golay with different padding modes."""
+        t = np.linspace(0, 2 * np.pi, N_POINTS)
+        x = np.sin(t)
+
+        t_torch = torch.tensor(t, dtype=torch.float64)
+        x_torch = torch.tensor(x, dtype=torch.float64)
+
+        window_length = 11
+        polyorder = 3
+
+        # Test all valid padding modes
+        for pad_mode in ['replicate', 'reflect', 'circular']:
+            sg = torch_dxdt.SavitzkyGolay(
+                window_length=window_length,
+                polyorder=polyorder,
+                pad_mode=pad_mode
+            )
+            result = sg.d(x_torch, t_torch)
+            
+            # Check output shape matches input
+            assert result.shape == x_torch.shape
+            # Check no NaNs
+            assert not torch.isnan(result).any()
+
+        # Test that interior results are the same regardless of padding mode
+        results = {}
+        for pad_mode in ['replicate', 'reflect', 'circular']:
+            sg = torch_dxdt.SavitzkyGolay(
+                window_length=window_length,
+                polyorder=polyorder,
+                pad_mode=pad_mode
+            )
+            results[pad_mode] = sg.d(x_torch, t_torch)
+
+        # Interior points should be very similar
+        margin = window_length
+        np.testing.assert_allclose(
+            results['replicate'][margin:-margin].numpy(),
+            results['reflect'][margin:-margin].numpy(),
+            rtol=1e-10,
+            atol=1e-10,
+            err_msg="Interior points should match between pad modes"
+        )
+
+    def test_pad_mode_backward_compatibility(self):
+        """Test that periodic=True still works (backward compatibility)."""
+        t = np.linspace(0, 2 * np.pi, N_POINTS, endpoint=False)
+        x = np.sin(t)
+
+        t_torch = torch.tensor(t, dtype=torch.float64)
+        x_torch = torch.tensor(x, dtype=torch.float64)
+
+        # Using deprecated periodic=True
+        sg_periodic = torch_dxdt.SavitzkyGolay(
+            window_length=11, polyorder=3, periodic=True
+        )
+        # Using new pad_mode='circular'
+        sg_circular = torch_dxdt.SavitzkyGolay(
+            window_length=11, polyorder=3, pad_mode='circular'
+        )
+
+        result_periodic = sg_periodic.d(x_torch, t_torch)
+        result_circular = sg_circular.d(x_torch, t_torch)
+
+        # Results should be identical
+        np.testing.assert_allclose(
+            result_periodic.numpy(),
+            result_circular.numpy(),
+            rtol=1e-14,
+            atol=1e-14,
+            err_msg="periodic=True should be equivalent to pad_mode='circular'"
+        )
+
+        # Check that periodic attribute is set correctly
+        assert sg_periodic.periodic is True
+        assert sg_periodic.pad_mode == 'circular'
+        assert sg_circular.periodic is True
+        assert sg_circular.pad_mode == 'circular'
+
+    def test_invalid_pad_mode(self):
+        """Test that invalid pad_mode raises ValueError."""
+        with pytest.raises(ValueError, match="pad_mode must be one of"):
+            torch_dxdt.SavitzkyGolay(
+                window_length=11, polyorder=3, pad_mode='invalid'
+            )
+
 
 class TestSpectralParity:
     """Test Spectral differentiation against the derivative package."""

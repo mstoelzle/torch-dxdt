@@ -62,16 +62,41 @@ sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3)
 dx = sg.d(x, t)
 
 # Higher derivatives
-sg2 = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4, deriv=2)
+sg2 = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=4, order=2)
 d2x = sg2.d(x, t)
+
+# Different padding modes for boundary handling
+sg_reflect = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3, pad_mode='reflect')
+sg_circular = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3, pad_mode='circular')
 ```
 
 ### Parameters
 
 - `window_length` (int): Length of the filter window. Must be odd.
 - `polyorder` (int): Order of the polynomial. Must be less than window_length.
-- `deriv` (int): Derivative order. Default: 1
-- `periodic` (bool): If True, uses circular padding. Default: False
+- `order` (int): Derivative order. Default: 1
+- `pad_mode` (str): Padding mode for boundary handling. Options:
+  - `'replicate'` (default): Repeat edge values. Good for monotonic signals.
+  - `'reflect'`: Mirror the signal at boundaries. Good for symmetric signals.
+  - `'circular'`: Wrap around. **Only for periodic signals.**
+- `periodic` (bool): Deprecated. Use `pad_mode='circular'` instead.
+
+### Padding Mode Details
+
+The choice of padding mode affects derivative accuracy at signal boundaries:
+
+```python
+# For monotonic signals (e.g., exponential growth)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3, pad_mode='replicate')
+
+# For signals with local symmetry at boundaries
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3, pad_mode='reflect')
+
+# For truly periodic signals (e.g., full sine wave cycles)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3, pad_mode='circular')
+```
+
+**Warning:** Using `'circular'` padding on non-periodic signals can cause severe artifacts at boundaries!
 
 ### When to Use
 
@@ -316,12 +341,71 @@ x_smooth, dx, d2x = derivs[0], derivs[1], derivs[2]
 
 ## Method Comparison
 
-| Method | Speed | Noise Robustness | Accuracy (Clean Data) | Differentiable |
-|--------|-------|------------------|----------------------|----------------|
-| Finite Difference | ⚡⚡⚡ | ⚠️ Low | ✅ Good | ✅ Yes |
-| Savitzky-Golay | ⚡⚡⚡ | ✅ High | ✅ Good | ✅ Yes |
-| Spectral | ⚡⚡⚡ | ⚠️ Medium | ⭐ Excellent | ✅ Yes |
-| Spline | ⚡⚡ | ✅ High | ✅ Good | ✅ Yes |
-| Kernel | ⚡ | ✅ High | ✅ Good | ✅ Yes |
-| Kalman | ⚡ | ✅ High | ✅ Good | ✅ Yes |
-| Whittaker | ⚡⚡ | ✅ High | ✅ Good | ✅ Yes |
+| Method | Speed | Noise Robustness | Accuracy (Clean Data) | Boundary Behavior | Differentiable |
+|--------|-------|------------------|----------------------|-------------------|----------------|
+| Finite Difference | ⚡⚡⚡ | ⚠️ Low | ✅ Good | ⚠️ Moderate | ✅ Yes |
+| Savitzky-Golay | ⚡⚡⚡ | ✅ High | ✅ Good | ⚠️ Poor | ✅ Yes |
+| Spectral | ⚡⚡⚡ | ⚠️ Medium | ⭐ Excellent | ⭐ Excellent (periodic) | ✅ Yes |
+| Spline | ⚡⚡ | ✅ High | ✅ Good | ✅ Good | ✅ Yes |
+| Kernel | ⚡ | ✅ High | ✅ Good | ✅ Good | ✅ Yes |
+| Kalman | ⚡ | ✅ High | ✅ Good | ✅ Good | ✅ Yes |
+| Whittaker | ⚡⚡ | ✅ High | ✅ Good | ⚠️ Moderate | ✅ Yes |
+
+---
+
+## Boundary Behavior
+
+Different methods handle signal boundaries (edges) differently. This is important when derivative accuracy at the start or end of your signal matters.
+
+| Method | Boundary Behavior | Reason |
+|--------|-------------------|--------|
+| **Spectral** | ⭐ Excellent (periodic) | Assumes periodicity, no boundaries exist |
+| **Spline** | ✅ Good | Global fit with natural boundary conditions |
+| **Kalman** | ✅ Good | Global smoother, handles edges gracefully |
+| **Kernel (GP)** | ✅ Good | Global regression, graceful degradation at edges |
+| **Finite Difference** | ⚠️ Moderate | Uses replicate padding, simple forward/backward differences at edges |
+| **Whittaker** | ⚠️ Moderate | Global smooth but uses finite differences for derivatives at boundaries |
+| **Savitzky-Golay** | ⚠️ Poor | Window-based local fit, edge values are extrapolated with padding |
+
+### Why Boundaries Matter
+
+Local/window-based methods (Savitzky-Golay, Finite Difference) must "pad" the signal at boundaries since they don't have enough neighboring points. Common padding strategies include:
+
+- **Replicate**: Repeat edge values (default) - assumes signal is flat beyond boundaries
+- **Reflect**: Mirror the signal - assumes symmetry at boundaries
+- **Circular/Periodic**: Wrap around - only valid for truly periodic signals
+
+Global methods (Spline, Kalman, Kernel) fit a model to the entire signal at once, providing more natural handling of boundaries without artificial padding.
+
+### Configuring Boundary Padding
+
+For `SavitzkyGolay`, you can control padding behavior with the `pad_mode` parameter:
+
+```python
+import torch_dxdt
+
+# Default: replicate edge values (good for monotonic signals)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3, pad_mode='replicate')
+
+# Mirror at boundaries (good for symmetric signals)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3, pad_mode='reflect')
+
+# Wrap around (ONLY for periodic signals)
+sg = torch_dxdt.SavitzkyGolay(window_length=11, polyorder=3, pad_mode='circular')
+```
+
+**Choosing the right padding mode:**
+
+| Signal Type | Recommended Mode | Example |
+|-------------|------------------|---------|
+| Monotonic (growing/decaying) | `'replicate'` | Exponential growth, ramp signals |
+| Symmetric at edges | `'reflect'` | Signals that level off at boundaries |
+| Truly periodic | `'circular'` | Complete sine wave cycles |
+
+### Recommendations for Boundary-Sensitive Applications
+
+If you need accurate derivatives at the **beginning or end** of your signal:
+
+1. **For periodic signals**: Use `Spectral` - it's designed for this case
+2. **For non-periodic signals**: Use `Spline`, `Kalman`, or `Kernel` - these are global methods with better boundary handling
+3. **If speed is critical**: Use `Savitzky-Golay` with `periodic=True` if your data allows, or trim edge values from results

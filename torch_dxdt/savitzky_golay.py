@@ -35,7 +35,12 @@ class SavitzkyGolay(Derivative):
         order: Order of the derivative to compute. Default is 1.
             Use order=1 for first derivative, order=2 for second derivative, etc.
         deriv: Alias for order (deprecated, use order instead).
-        periodic: If True, treats the data as periodic. Default False.
+        pad_mode: Padding mode for handling boundaries. Options are:
+            - 'replicate': Repeat the edge value (default, good for monotonic signals)
+            - 'reflect': Mirror the signal at the boundary (good for symmetric signals)
+            - 'circular': Wrap around (only for periodic signals)
+        periodic: Deprecated, use pad_mode='circular' instead. If True, sets
+            pad_mode='circular'. Default False.
 
     Example:
         >>> sg = SavitzkyGolay(window_length=11, polyorder=4, order=1)
@@ -45,7 +50,11 @@ class SavitzkyGolay(Derivative):
         >>> # Compute multiple orders efficiently:
         >>> derivs = sg.d_orders(x, t, orders=[0, 1, 2])
         >>> x_smooth, dx, d2x = derivs[0], derivs[1], derivs[2]
+        >>> # Use reflect padding for better boundary behavior:
+        >>> sg_reflect = SavitzkyGolay(window_length=11, polyorder=4, pad_mode='reflect')
     """
+
+    VALID_PAD_MODES = ('replicate', 'reflect', 'circular')
 
     def __init__(
         self,
@@ -53,6 +62,7 @@ class SavitzkyGolay(Derivative):
         polyorder: int,
         order: int = 1,
         deriv: int | None = None,
+        pad_mode: str = 'replicate',
         periodic: bool = False,
     ):
         if window_length % 2 == 0:
@@ -70,11 +80,22 @@ class SavitzkyGolay(Derivative):
                 "for meaningful derivative estimation."
             )
 
+        # Handle pad_mode and periodic (periodic is deprecated)
+        if periodic:
+            pad_mode = 'circular'
+        
+        if pad_mode not in self.VALID_PAD_MODES:
+            raise ValueError(
+                f"pad_mode must be one of {self.VALID_PAD_MODES}, "
+                f"got '{pad_mode}'"
+            )
+
         self.window_length = window_length
         self.polyorder = polyorder
         self.order = order
         self.deriv = order  # Keep for backward compatibility
-        self.periodic = periodic
+        self.pad_mode = pad_mode
+        self.periodic = pad_mode == 'circular'  # Keep for backward compatibility
         self.pad_size = window_length // 2
 
         # Coefficients will be computed lazily based on delta (dt)
@@ -149,10 +170,8 @@ class SavitzkyGolay(Derivative):
         x_conv = x_flat.unsqueeze(1)
 
         # Apply padding
-        if self.periodic:
-            x_padded = F.pad(x_conv, (self.pad_size, self.pad_size), mode="circular")
-        else:
-            x_padded = F.pad(x_conv, (self.pad_size, self.pad_size), mode="replicate")
+        pad = (self.pad_size, self.pad_size)
+        x_padded = F.pad(x_conv, pad, mode=self.pad_mode)
 
         # Convolve
         dx = F.conv1d(x_padded, kernel)
@@ -245,10 +264,8 @@ class SavitzkyGolay(Derivative):
         x_conv = x_flat.unsqueeze(1)
 
         # Apply padding once (shared across all orders)
-        if self.periodic:
-            x_padded = F.pad(x_conv, (self.pad_size, self.pad_size), mode="circular")
-        else:
-            x_padded = F.pad(x_conv, (self.pad_size, self.pad_size), mode="replicate")
+        pad = (self.pad_size, self.pad_size)
+        x_padded = F.pad(x_conv, pad, mode=self.pad_mode)
 
         # Compute each derivative order
         results = {}
